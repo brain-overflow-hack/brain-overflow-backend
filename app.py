@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from mongo import Mongo
+from fastapi.middleware.cors import CORSMiddleware
 #from cryptography.fernet import Fernet
 
 
@@ -9,6 +10,14 @@ from mongo import Mongo
 #print(cipher_key)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS", "PATCH", "DELETE", "PUT"],
+    allow_headers=["*"],
+)
 
 class Token(BaseModel):
     token: str
