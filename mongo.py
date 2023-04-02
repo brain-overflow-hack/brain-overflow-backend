@@ -110,7 +110,7 @@ class _MongoWrapper:
         for month, cnt in result['counts'].items():
             labels.append(month)
             data.append(cnt)
-        chart_data = {'labels': labels, 'datasets': [{'label': 'Wins for month', 'data': data , 'backgroundColor': '#f87979'}]}
+        chart_data = {'labels': labels, 'datasets': [{'label': 'Participations for month', 'data': data , 'backgroundColor': '#f87979'}]}
         return chart_data
     
     async def get_chart_data_sum(self, tin: str):
@@ -154,7 +154,7 @@ class _MongoWrapper:
         for month, sum in result['sum'].items():
             labels.append(month)
             data.append(sum)
-        chart_data = {'labels': labels, 'datasets': [{'label': 'Wins for month', 'data': data , 'backgroundColor': '#f87979'}]}
+        chart_data = {'labels': labels, 'datasets': [{'label': 'Sum for month', 'data': data , 'backgroundColor': '#f87979'}]}
         return chart_data
 
 Mongo = _MongoWrapper()
