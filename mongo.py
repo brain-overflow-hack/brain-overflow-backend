@@ -2,6 +2,8 @@ from typing import Any
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 from mini_data import *
 from datetime import datetime, timedelta
+from cachetools import LRUCache
+from asyncache import cached
 
 class _MongoWrapper:
     def __init__(self) -> None:
@@ -35,6 +37,7 @@ class _MongoWrapper:
     async def find_fake_data(self):
         return await self.contracts.count_documents({"contract_conclusion_date": "1970-01-01"})
     
+    @cached(LRUCache(maxsize=128), key=lambda _,t: t)
     async def get_chart_data_win(self, tin: str):
         end_date = datetime.now().replace(day=1) # First day of the current month
         start_date = end_date - timedelta(days=360*3) # last 6 months
@@ -68,12 +71,20 @@ class _MongoWrapper:
         #data = {'labels': [], 'datasets': [ {'labels'} ]}
         data = []
         labels = []
-        for month, cnt in result['counts'].items():
+        for month, cnt in list(reversed(result['counts'].items())):
             labels.append(month)
             data.append(cnt)
+
+        data.append(sum(data) / len(labels))
+
+        new_label = str(int(labels[-1].split("-")[0].strip('0')) + 1)
+        if len(new_label) == 1:
+            new_label = f'0{new_label}'
+        labels.append(f'{new_label}-{labels[-1].split("-")[1]}')
         chart_data = {'labels': labels, 'datasets': [{'label': 'Wins for month', 'data': data , 'backgroundColor': '#f87979'}]}
         return chart_data
     
+    @cached(LRUCache(maxsize=128), key=lambda _,t: t)
     async def get_chart_data_all(self, tin: str):
         end_date = datetime.now().replace(day=1) # First day of the current month
         start_date = end_date - timedelta(days=360*3) # last 6 months
@@ -107,12 +118,20 @@ class _MongoWrapper:
         #data = {'labels': [], 'datasets': [ {'labels'} ]}
         data = []
         labels = []
-        for month, cnt in result['counts'].items():
+        for month, cnt in list(reversed(result['counts'].items())):
             labels.append(month)
             data.append(cnt)
+        
+        data.append(sum(data) / len(labels))
+
+        new_label = str(int(labels[-1].split("-")[0].strip('0')) + 1)
+        if len(new_label) == 1:
+            new_label = f'0{new_label}'
+        labels.append(f'{new_label}-{labels[-1].split("-")[1]}')
         chart_data = {'labels': labels, 'datasets': [{'label': 'Participations for month', 'data': data , 'backgroundColor': '#f87979'}]}
         return chart_data
     
+    @cached(LRUCache(maxsize=128), key=lambda _,t: t)
     async def get_chart_data_sum(self, tin: str):
         end_date = datetime.now().replace(day=1) # First day of the current month
         start_date = end_date - timedelta(days=360*3) # last 6 months
@@ -151,9 +170,16 @@ class _MongoWrapper:
         #data = {'labels': [], 'datasets': [ {'labels'} ]}
         data = []
         labels = []
-        for month, sum in result['sum'].items():
+        for month, sum_ in list(reversed(result['sum'].items())):
             labels.append(month)
-            data.append(sum)
+            data.append(sum_)
+            
+        data.append(sum(data) / len(labels))
+
+        new_label = str(int(labels[-1].split("-")[0].strip('0')) + 1)
+        if len(new_label) == 1:
+            new_label = f'0{new_label}'
+        labels.append(f'{new_label}-{labels[-1].split("-")[1]}')
         chart_data = {'labels': labels, 'datasets': [{'label': 'Sum for month', 'data': data , 'backgroundColor': '#f87979'}]}
         return chart_data
 
