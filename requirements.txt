@@ -3,4 +3,5 @@ uvicorn
 motor
 openpyxl
 cryptography
+loguru
 motor==3.1.1

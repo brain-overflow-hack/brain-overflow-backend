@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from mongo import Mongo
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 #from cryptography.fernet import Fernet
 
 
@@ -41,8 +42,21 @@ async def get_user(token: str = Header()):
             return company
     except ValueError:
         raise HTTPException(status_code=403, detail="Неправильный ИНН")
+    
+@app.get("/chart/win")
+async def get_chart_data_win(tin: str):
+    return await Mongo.get_chart_data_win(tin=tin)
+
+@app.get("/chart/all")
+async def get_chart_data_all(tin: str):
+    return await Mongo.get_chart_data_all(tin=tin)
+
+@app.get("/chart/sum")
+async def get_chart_data_sum(tin: str):
+    return await Mongo.get_chart_data_sum(tin=tin)
 
 
 @app.on_event('startup')
 async def start_app():
     await Mongo.fill_db()
+    logger.info(await Mongo.find_fake_data())
